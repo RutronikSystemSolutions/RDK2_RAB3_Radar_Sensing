@@ -7,7 +7,7 @@ This code example is a BGT60TR13C Radar *Presence Detection* and *Counting Perso
 ## Requirements
 
 - [ModusToolbox® software](https://www.infineon.com/cms/en/design-support/tools/sdk/modustoolbox-software/) v3.1
-- RAB3-Radar Rev0 [prototype]
+- [RAB3-Radar Rev1](https://github.com/RutronikSystemSolutions/RAB3_Radar_Hardware_Files) [first release]
 
 ## Using the code example
 

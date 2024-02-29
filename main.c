@@ -25,6 +25,7 @@
 #include "cybsp.h"
 #include "cyhal.h"
 #include "mtb_radar_sensing.h"
+#include "sys_timer.h"
 
 /*******************************************************************************
  * Macros
@@ -60,7 +61,6 @@
 /*******************************************************************************
  * Function Prototypes
  ********************************************************************************/
-void tick_timer_config();
 
 #if defined(COUNTING_PERSONS)
     static void radar_counter_callback(mtb_radar_sensing_context_t *context,
@@ -77,9 +77,6 @@ void tick_timer_config();
 /*******************************************************************************
  * Global Variables
  ********************************************************************************/
-cyhal_timer_t tick_timer;
-static volatile uint32_t ticks = 0;
-
 static mtb_radar_sensing_mask_t application_type =
 #if defined(COUNTING_PERSONS)
  MTB_RADAR_SENSING_MASK_COUNTER_EVENTS
@@ -98,15 +95,6 @@ static mtb_radar_sensing_callback_t callback_function =
 
 static mtb_radar_sensing_context_t radar_context;
 
-/*Tick Timer Interrupt*/
-static void tick_isr(void *callback_arg, cyhal_timer_event_t event)
-{
-    (void) callback_arg;
-    (void) event;
-
-    ticks++;
-}
-
 /*******************************************************************************
 * Function Name: sys_now
 ********************************************************************************
@@ -122,7 +110,7 @@ static void tick_isr(void *callback_arg, cyhal_timer_event_t event)
 *******************************************************************************/
  uint64_t sys_now(void)
 {
-    return ticks;
+    return get_system_time_ms();
 }
 
 /*******************************************************************************
@@ -154,27 +142,27 @@ int main(void)
                                          .irq = CYBSP_IRQ,
                                          .spi = &mSPI};
 
-    /* Configure a 1ms Tick interrupt */
-    tick_timer_config();
-
     result = cybsp_init();
     CY_ASSERT(result == CY_RSLT_SUCCESS);
 
     /* Enable global interrupts. */
     __enable_irq();
 
-    /*Initialize Module RESET and keep it low*/
-    result = cyhal_gpio_init( ARDU_IO5, CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_STRONG, false);
+    /* Configure a 1ms Tick interrupt */
+	if (!sys_timer_init())
+	{
+		CY_ASSERT(0);
+	}
+
+    /*Initialize NJR4652F2S2 POWER pin*/
+    result = cyhal_gpio_init(ARDU_IO7, CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_OPENDRAINDRIVESLOW, false); /*Keep it OFF*/
     if (result != CY_RSLT_SUCCESS)
-    {
-    	 CY_ASSERT(0);
-    }
+    {CY_ASSERT(0);}
+
     /*Initialize BGT60TR13C Power Control pin*/
-    result = cyhal_gpio_init(ARDU_IO3, CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_STRONG, false); /*Keep it OFF*/
+    result = cyhal_gpio_init(ARDU_IO3, CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_STRONG, true); /*Turn it ON*/
     if (result != CY_RSLT_SUCCESS)
-    {
-    	CY_ASSERT(0);
-    }
+    {CY_ASSERT(0);}
 
     /* Initialize two LED ports and set LEDs' initial state to off */
     result = cyhal_gpio_init(LED_RED, CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_STRONG, LED_STATE_OFF);
@@ -227,9 +215,12 @@ int main(void)
     Cy_GPIO_SetSlewRate(CYHAL_GET_PORTADDR(CYBSP_SPI_CLK), CYHAL_GET_PIN(CYBSP_SPI_CLK), CY_GPIO_SLEW_FAST);
     Cy_GPIO_SetDriveSel(CYHAL_GET_PORTADDR(CYBSP_SPI_CLK), CYHAL_GET_PIN(CYBSP_SPI_CLK), CY_GPIO_DRIVE_1_8);
 
-    /* Set the data rate to 12.5 Mbps */
+    /* Set the data rate to SPI_FREQUENCY Mbps */
     if (cyhal_spi_set_frequency(hw_cfg.spi, SPI_FREQUENCY) != CY_RSLT_SUCCESS)
-        CY_ASSERT(result == CY_RSLT_SUCCESS);
+    {
+        printf("ERROR Radar Sensing init.\n\r");
+        CY_ASSERT(0);
+    }
 
     /* Radar initialization */
     result = mtb_radar_sensing_init(&radar_context, &hw_cfg, application_type);
@@ -405,34 +396,5 @@ static void radar_presence_sensing_callback(mtb_radar_sensing_context_t *context
     }
 }
 #endif
-
-/*Initialize timer for 1 ms Interrupts*/
-void tick_timer_config()
-{
-    cy_rslt_t rslt;
-    const cyhal_timer_cfg_t timer_cfg =
-    {
-        .compare_value = 0,                 /* Timer compare value, not used */
-        .period = 9999,                      /* Defines the timer period */
-        .direction = CYHAL_TIMER_DIR_UP,    /* Timer counts up */
-        .is_compare = false,                /* Don't use compare mode */
-        .is_continuous = true,              /* Run the timer indefinitely */
-        .value = 0                          /* Initial value of counter */
-    };
-    /* Initialize the timer object. Does not use pin output ('pin' is NC) and
-     * does not use a pre-configured clock source ('clk' is NULL). */
-    rslt = cyhal_timer_init(&tick_timer, NC, NULL);
-    CY_ASSERT(CY_RSLT_SUCCESS == rslt);
-    /* Apply timer configuration such as period, count direction, run mode, etc. */
-    rslt = cyhal_timer_configure(&tick_timer, &timer_cfg);
-    /* Set the frequency of timer to 10000 Hz */
-    rslt = cyhal_timer_set_frequency(&tick_timer, 1000000);
-    /* Assign the ISR to execute on timer interrupt */
-    cyhal_timer_register_callback(&tick_timer, tick_isr, NULL);
-    /* Set the event on which timer interrupt occurs and enable it */
-    cyhal_timer_enable_event(&tick_timer, CYHAL_TIMER_IRQ_TERMINAL_COUNT, 3, true);
-    /* Start the timer with the configured settings */
-    rslt = cyhal_timer_start(&tick_timer);
-}
 
 /* [] END OF FILE */
