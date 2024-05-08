@@ -6,8 +6,12 @@ This code example is a BGT60TR13C Radar *Presence Detection* and *Counting Perso
 
 ## Requirements
 
-- [ModusToolbox® software](https://www.infineon.com/cms/en/design-support/tools/sdk/modustoolbox-software/) v3.1
+- [ModusToolbox® software](https://www.infineon.com/cms/en/design-support/tools/sdk/modustoolbox-software/) **v3.x** [built with **v3.1**]
 - [RAB3-Radar Rev1](https://github.com/RutronikSystemSolutions/RAB3_Radar_Hardware_Files) [first release]
+
+## Supported toolchains (make variable 'TOOLCHAIN')
+
+- GNU Arm&reg; Embedded Compiler v11.3.1 (`GCC_ARM`) - Default value of `TOOLCHAIN`
 
 ## Using the code example
 
