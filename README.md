@@ -6,7 +6,7 @@ This code example is a BGT60TR13C Radar *Presence Detection* and *Counting Perso
 
 ## Requirements
 
-- [ModusToolbox® software](https://www.infineon.com/cms/en/design-support/tools/sdk/modustoolbox-software/) **v3.x** [built with **v3.1**]
+- [ModusToolbox® software](https://www.infineon.com/cms/en/design-support/tools/sdk/modustoolbox-software/) **v2025.4.0** [built with **v3.1**]
 - [RAB3-Radar Rev1](https://github.com/RutronikSystemSolutions/RAB3_Radar_Hardware_Files) [first release]
 
 ## Supported toolchains (make variable 'TOOLCHAIN')
@@ -34,7 +34,7 @@ Create the project and open it using one of the following:
 
 4. (Optional) Change the suggested **New Application Name**.
 
-5. The **Application(s) Root Path** defaults to the Eclipse workspace which is usually the desired location for the application. If you want to store the application in a different location, you can change the *Application(s) Root Path* value. Applications that share libraries should be in the same root path.
+5. The **Application(s) Root Path** defaults to the Eclipse workspace, which is usually the desired location for the application. If you want to store the application in a different location, you can change the *Application(s) Root Path* value. Applications that share libraries should be in the same root path.
 
 6. Click **Create** to complete the application creation process.
 
@@ -62,7 +62,7 @@ The Counting Persons mode is enabled by uncommenting the definition as shown bel
 
 ### Debugging
 
-If you successfully have imported the example, the debug configurations are already prepared to use with the KitProg3 or MiniProg4. Open the ModusToolbox perspective and find the Quick Panel. Click on the desired debug launch configuration and wait for the programming to complete and the debugging process to start.
+If you have successfully imported the example, the debug configurations are already prepared to use with the KitProg3 or MiniProg4. Open the ModusToolbox perspective and find the Quick Panel. Click on the desired debug launch configuration and wait for the programming to complete and the debugging process to start.
 
 <img src="images/debug.png" style="zoom:100%;" />
 
